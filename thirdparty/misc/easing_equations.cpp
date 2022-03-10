@@ -295,7 +295,29 @@ static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
 }
-}; // namespace back
+}; //namespace back
+///////////////////////////////////////////////////////////////////////////
+// linear
+///////////////////////////////////////////////////////////////////////////
+namespace spring {
+static real_t in(real_t t, real_t b, real_t c, real_t d) {
+	t /= d + b;
+	t = (sin(t * pi * (0.2f + 2.5f * t * t * t)) * pow(1.0f - t, 2.2f) + t) * (1.0f + (1.2f * (1.0f - t)));
+	return b + (c - b) * t;
+}
+
+static real_t out(real_t t, real_t b, real_t c, real_t d) {
+	return in(t, b, c, d);
+}
+
+static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
+	return in(t, b, c, d);
+}
+
+static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
+	return in(t, b, c, d);
+}
+}; //namespace spring
 
 Tween::interpolater Tween::interpolaters[Tween::TRANS_COUNT][Tween::EASE_COUNT] = {
 	{ &linear::in, &linear::out, &linear::in_out, &linear::out_in },
@@ -309,6 +331,7 @@ Tween::interpolater Tween::interpolaters[Tween::TRANS_COUNT][Tween::EASE_COUNT] 
 	{ &circ::in, &circ::out, &circ::in_out, &circ::out_in },
 	{ &bounce::in, &bounce::out, &bounce::in_out, &bounce::out_in },
 	{ &back::in, &back::out, &back::in_out, &back::out_in },
+	{ &spring::in, &spring::out, &spring::in_out, &spring::out_in },
 };
 
 real_t Tween::_run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d) {

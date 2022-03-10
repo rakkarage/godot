@@ -54,6 +54,7 @@ public:
 		TRANS_CIRC,
 		TRANS_BOUNCE,
 		TRANS_BACK,
+		TRANS_SPRING,
 
 		TRANS_COUNT,
 	};
