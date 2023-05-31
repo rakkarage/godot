@@ -123,6 +123,9 @@ bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 	return false;
 }
 
+// Store whether each folder is expanded or collapsed.
+HashMap<String, bool> folderExpanded;
+
 void TileSetEditor::_update_sources_list(int force_selected_id) {
 	if (tile_set.is_null()) {
 		return;
@@ -149,13 +152,17 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 
 	// Update the atlas sources.
 	List<int> source_ids = TilesEditorPlugin::get_singleton()->get_sorted_sources(tile_set);
+
+	// Store sources by folder.
+	HashMap<String, List<int>> sourcesByFolder;
+
 	for (const int &source_id : source_ids) {
 		TileSetSource *source = *tile_set->get_source(source_id);
 
 		Ref<Texture2D> texture;
 		String item_text;
 
-		// Common to all type of sources.
+		// Common to all types of sources.
 		if (!source->get_name().is_empty()) {
 			item_text = vformat(TTR("%s (ID: %d)"), source->get_name(), source_id);
 		}
@@ -190,8 +197,38 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 			texture = missing_texture_texture;
 		}
 
-		sources_list->add_item(item_text, texture);
-		sources_list->set_item_metadata(-1, source_id);
+		CompressedTexture2D *compressed_tex = Object::cast_to<CompressedTexture2D>(*atlas_source->get_texture());
+		String folder = compressed_tex->get_load_path().get_file().get_slice("-", 0);
+
+		// Store sources in folders
+		if (!sourcesByFolder.has(folder)) {
+			List<int> emptyArray;
+			sourcesByFolder.insert(folder, emptyArray);
+			// Initialize each folder as expanded if it's not already in the dictionary
+			if (!folderExpanded.has(folder)) {
+				folderExpanded.insert(folder, true);
+			}
+		}
+		sourcesByFolder[folder].push_back(source_id);
+	}
+
+	// Add sources to the list by folder
+	for (auto &elem : sourcesByFolder) {
+		String folder = elem.key;
+		// Add folder as a disabled item
+		sources_list->add_item("[" + folder + "]", nullptr);
+		// Only add sources if the folder is expanded
+		if (folderExpanded[folder]) {
+			List<int> source_ids = elem.value;
+			for (auto source_elem = source_ids.front(); source_elem; source_elem = source_elem->next()) {
+				int source_id = source_elem->get();
+				TileSetSource *source = *tile_set->get_source(source_id);
+				String item_text = vformat(TTR("%s (ID: %d)"), source->get_name(), source_id);
+				Ref<Texture2D> texture = Object::cast_to<TileSetAtlasSource>(source)->get_texture();
+				sources_list->add_item(item_text, texture);
+				sources_list->set_item_metadata(-1, source_id);
+			}
+		}
 	}
 
 	// Set again the current selected item if needed.
@@ -221,6 +258,18 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 
 	// Synchronize the lists.
 	TilesEditorPlugin::get_singleton()->set_sources_lists_current(sources_list->get_current());
+}
+
+void TileSetEditor::_source_folder_toggle(int index) {
+	// Check if the activated item is a folder label
+	String item_text = sources_list->get_item_text(index);
+	if (item_text.begins_with("[")) {
+		// Extract the folder name from the item text
+		String folder = item_text.substr(1, item_text.length() - 2);
+		// Toggle the state of the specified folder
+		folderExpanded[folder] = !folderExpanded[folder];
+		_update_sources_list();
+	}
 }
 
 void TileSetEditor::_source_selected(int p_source_index) {
@@ -780,6 +829,7 @@ TileSetEditor::TileSetEditor() {
 	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileSetEditor::_update_sources_list).bind(-1));
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+	sources_list->connect("item_activated", callable_mp(this, &TileSetEditor::_source_folder_toggle));
 	SET_DRAG_FORWARDING_CDU(sources_list, TileSetEditor);
 	split_container_left_side->add_child(sources_list);
 
