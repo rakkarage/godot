@@ -74,6 +74,12 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
 				undo_redo->commit_action();
 				added += 1;
+
+				// If just one tile... set it up.
+				if (tile_set->get_tile_size() == resource->get_size()) {
+					_update_sources_list(source_id);
+					tile_set_atlas_source_editor->auto_create_tiles();
+				}
 			}
 		}
 
