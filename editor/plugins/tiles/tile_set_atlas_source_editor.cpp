@@ -269,6 +269,12 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 			notify_property_list_changed();
 			emit_signal(SNAME("changed"), "animation_separation");
 			return true;
+		} else if (p_name == "explicit_start_frame") {
+			for (TileSelection tile : tiles) {
+				tile_set_atlas_source->set_tile_animation_explicit_start_frame(tile.tile, p_value);
+			}
+			emit_signal(SNAME("changed"), "explicit_start_frame");
+			return true;
 		} else if (components.size() == 2 && components[0].begins_with("animation_frame_") && components[0].trim_prefix("animation_frame_").is_valid_int()) {
 			for (TileSelection tile : tiles) {
 				int frame = components[0].trim_prefix("animation_frame_").to_int();
@@ -426,7 +432,8 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_columns")));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("animation_separation")));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("animation_speed")));
-		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_mode"), PROPERTY_HINT_ENUM, "Default,Random Start Times"));
+		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_mode"), PROPERTY_HINT_ENUM, "Default,Random Start Times,Explicit Start Frame"));
+		p_list->push_back(PropertyInfo(Variant::INT, PNAME("explicit_start_frame")));
 		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_frames_count"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, "Frames,animation_frame_"));
 		// Not optimal, but returns value for the first tile. This is similar to what MultiNodeEdit does.
 		if (tile_set_atlas_source->get_tile_animation_frames_count(tiles.front()->get().tile) == 1) {
