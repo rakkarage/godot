@@ -596,7 +596,6 @@ public:
 	enum TileAnimationMode {
 		TILE_ANIMATION_MODE_DEFAULT,
 		TILE_ANIMATION_MODE_RANDOM_START_TIMES,
-		TILE_ANIMATION_MODE_EXPLICIT_START_FRAME,
 		TILE_ANIMATION_MODE_MAX,
 	};
 
@@ -611,7 +610,6 @@ private:
 		real_t animation_speed = 1.0;
 		TileSetAtlasSource::TileAnimationMode animation_mode = TILE_ANIMATION_MODE_DEFAULT;
 		LocalVector<real_t> animation_frames_durations;
-		int explicit_start_frame = 0;
 
 		// Alternatives
 		HashMap<int, TileData *> alternatives;
@@ -718,8 +716,6 @@ public:
 	void set_tile_animation_frame_duration(const Vector2i p_atlas_coords, int p_frame_index, real_t p_duration);
 	real_t get_tile_animation_frame_duration(const Vector2i p_atlas_coords, int p_frame_index) const;
 	real_t get_tile_animation_total_duration(const Vector2i p_atlas_coords) const;
-	void set_tile_animation_explicit_start_frame(const Vector2i p_atlas_coords, int p_frame_index);
-	int get_tile_animation_explicit_start_frame(const Vector2i p_atlas_coords) const;
 
 	// Alternative tiles.
 	int create_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_id_override = -1);
