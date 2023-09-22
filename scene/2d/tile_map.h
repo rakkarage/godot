@@ -172,6 +172,7 @@ public:
 
 private:
 	friend class TileSetPlugin;
+	HashMap<uint32_t, int> explicit_start_frames;
 
 	// A compatibility enum to specify how is the data if formatted.
 	enum DataFormat {

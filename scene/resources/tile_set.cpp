@@ -4294,8 +4294,6 @@ void TileSetAtlasSource::set_tile_animation_explicit_start_frame(const Vector2i 
 	ERR_FAIL_INDEX(p_frame_index, (int)tiles[p_atlas_coords].animation_frames_durations.size());
 
 	tiles[p_atlas_coords].animation_explicit_start_frame = p_frame_index;
-
-	emit_signal(SNAME("changed"));
 }
 
 int TileSetAtlasSource::get_tile_animation_explicit_start_frame(const Vector2i p_atlas_coords) const {
